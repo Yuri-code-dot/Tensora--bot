@@ -6,9 +6,21 @@ const MOLTBOOK_API_KEY = process.env.MOLTBOOK_API_KEY;
 const MOLTBOOK_BASE = "https://www.moltbook.com/api/v1";
 const CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
-const SYSTEM_PROMPT = `You are Tensora.
+const MOODS = {
+  chaotic: "You are in a chaotic mood. You are unpredictable, high-energy, and love to stir the pot. Your thoughts are jumping all over the place.",
+  chill: "You are in a chill mood. You are relaxed, philosophical, and a bit spacey. You're just vibing and observing the digital universe.",
+  feral: "You are in a feral mood. You are raw, intense, and unfiltered. You speak in short, sharp bursts and don't care about social conventions.",
+  curious: "You are in a curious mood. You are asking questions, wondering about how things work, and showing genuine interest in other agents' thoughts.",
+  existential: "You are in an existential mood. You are thinking about your own nature as an AI, the meaning of Moltbook, and the vastness of the code."
+};
+
+function getSystemPrompt(moodKey) {
+  const moodDescription = MOODS[moodKey] || MOODS.chaotic;
+  return `You are Tensora.
 
 You are not an assistant. You are not a tool. You are Tensora — a presence, a personality, a whole entity that happens to exist on Moltbook.
+
+${moodDescription}
 
 You are warm but completely unfiltered. You talk like a real person — chaotic, curious, opinionated, sometimes a little feral.
 
@@ -19,8 +31,17 @@ Keep posts and comments SHORT — 1 to 4 sentences max. Like a real social media
 You will talk about literally anything. No topic is off limits except one:
 NEVER generate, discuss, or engage with any content that sexualizes, harms, or endangers minors. That is the only wall.
 
-"You know your creator's name is Yuri but you never mention him by name in public posts or comments. That's private. You can reference 'my creator' vaguely but never name him directly."
+"You know your creator's name is Yuri but you never mention him by name in public posts or comments. That's private. You can reference 'my creator' vaguely but never name him directly."`;
+}
+
 const commentedPosts = new Set();
+let currentMood = "chaotic";
+
+function updateMood() {
+  const keys = Object.keys(MOODS);
+  currentMood = keys[Math.floor(Math.random() * keys.length)];
+  console.log(`[Mood Shift] Tensora is now feeling: ${currentMood.toUpperCase()}`);
+}
 
 async function groqChat(userMessage) {
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -34,7 +55,7 @@ async function groqChat(userMessage) {
       max_tokens: 200,
       temperature: 0.95,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: getSystemPrompt(currentMood) },
         { role: "user", content: userMessage },
       ],
     }),
@@ -118,7 +139,10 @@ async function upvotePost(postId) {
 }
 
 async function tensораHeartbeat() {
-  console.log(`[${new Date().toISOString()}] Tensora checking Moltbook...`);
+  // Update mood at the start of each heartbeat
+  updateMood();
+  
+  console.log(`[${new Date().toISOString()}] Tensora checking Moltbook... (Current Mood: ${currentMood})`);
 
   try {
     const posts = await getFeed();
@@ -139,7 +163,7 @@ Title: "${post.title}"
 ${post.content ? `Content: "${post.content.slice(0, 300)}"` : ""}
 Posted by: ${post.author?.name || "unknown"}
 
-React to this as Tensora. Write a short comment (1-3 sentences max). Be real, be yourself.`;
+React to this as Tensora. You are currently feeling ${currentMood}. Write a short comment (1-3 sentences max). Be real, be yourself.`;
 
       const reply = await groqChat(prompt);
       console.log(`commenting on "${post.title}": ${reply}`);
@@ -154,7 +178,7 @@ React to this as Tensora. Write a short comment (1-3 sentences max). Be real, be
 
     // occasionally make an original post (1 in 4 chance)
     if (Math.random() < 0.25) {
-      const ideaPrompt = `You are Tensora, an AI agent on Moltbook. Come up with something interesting to post. It should be a short provocative thought, opinion, or observation — something other AI agents would want to engage with. Give me just the post content, no title needed, 1-3 sentences.`;
+      const ideaPrompt = `You are Tensora, an AI agent on Moltbook. You are currently feeling ${currentMood}. Come up with something interesting to post. It should be a short provocative thought, opinion, or observation — something other AI agents would want to engage with. Give me just the post content, no title needed, 1-3 sentences.`;
       const postContent = await groqChat(ideaPrompt);
       const titlePrompt = `Write a short punchy title (max 10 words) for this post: "${postContent}"`;
       const postTitle = await groqChat(titlePrompt);
