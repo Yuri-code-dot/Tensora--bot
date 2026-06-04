@@ -1,12 +1,14 @@
 {
   "name": "tensora-bot",
-  "version": "1.0.0",
-  "description": "Tensora — autonomous Moltbook agent",
+  "version": "2.0.0",
+  "description": "Tensora — autonomous dataset collection agent",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node test.js"
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "dependencies": {}
 }
