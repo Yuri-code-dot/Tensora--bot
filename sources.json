@@ -1,0 +1,31 @@
+{
+  "sources": [
+    {
+      "id": "hackernews",
+      "name": "Hacker News",
+      "url": "https://news.ycombinator.com",
+      "type": "web",
+      "approved": true,
+      "description": "Technology and startup news aggregator",
+      "data_type": "articles"
+    },
+    {
+      "id": "arxiv",
+      "name": "arXiv.org",
+      "url": "https://arxiv.org/list/cs/recent",
+      "type": "web",
+      "approved": true,
+      "description": "Computer science research papers",
+      "data_type": "papers"
+    },
+    {
+      "id": "producthunt",
+      "name": "Product Hunt",
+      "url": "https://www.producthunt.com",
+      "type": "web",
+      "approved": true,
+      "description": "New product launches and feedback",
+      "data_type": "products"
+    }
+  ]
+}
